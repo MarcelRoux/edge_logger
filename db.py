@@ -49,3 +49,9 @@ class SensorLog:
 
         return db_dir
 
+    def insert(self, values):
+        insert_values = ','.join(map(str, values))
+        query = f'{self.table_insert_script}({insert_values})'
+
+        self.cur.execute(query)
+        self.conn.commit()
