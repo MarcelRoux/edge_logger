@@ -12,27 +12,32 @@ DB_ROOT = './data'
 
 class SensorLog:
 
-    def __init__(self, sensor=SENSOR, table_script=TEMPERATURE_TABLE, db_root=DB_ROOT):
+    def __init__(self, sensor=SENSOR,
+                 table_setup_script=TEMPERATURE_TABLE_CREATE,
+                 table_insert_script=TEMPERATURE_TABLE_INSERT, db_root=DB_ROOT):
         self.sensor = sensor
         self.db_root = db_root
+        self.table_insert_script = table_insert_script
 
-        conn, cur = self.cursor()
-        self.setup_table(table_script, conn, cur)
+        self.db_dir = self.setup_folder_structure()
+        self.conn, self.cur = self.cursor()
+        self.setup_table(table_setup_script)
 
     def cursor(self) -> Tuple[Connection, Cursor]:
         '''
         Sets up a table connection and creates a file if none exists.
         '''
-        db_name = f'{DB_ROOT}/{self.sensor}_{now_datetime_hour_string()}.db'
+        db_name = f'{self.db_dir}/{self.sensor}_{now_datetime_hour_string()}.db'
 
         conn = sqlite3.connect(db_name)
         cur = conn.cursor()
 
         return conn, cur
 
-    def setup_table(self, table_script, conn, cur):
+    def setup_table(self, table_script):
         '''
         Execute table creation script.
         '''
-        cur.execute(table_script)
-        conn.commit()
+        self.cur.execute(table_script)
+        self.conn.commit()
+
