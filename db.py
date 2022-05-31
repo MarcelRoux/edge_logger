@@ -1,9 +1,10 @@
 import sqlite3
+import os
 from sqlite3 import Connection, Cursor
 from typing import Tuple
 
-from table_scripts import TEMPERATURE_TABLE
-from time_module import now_datetime_hour_string
+from table_scripts import TEMPERATURE_TABLE_CREATE, TEMPERATURE_TABLE_INSERT
+from time_module import now_utc, now_datetime_hour_string
 
 SENSOR = 'dht'
 DB_ROOT = './data'
