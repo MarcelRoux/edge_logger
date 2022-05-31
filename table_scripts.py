@@ -6,3 +6,10 @@ TEMPERATURE_TABLE_CREATE = (
     " 'temp_f' REAL NOT NULL"
     ");"
 )
+
+TEMPERATURE_TABLE_INSERT = (
+    "INSERT INTO temperature("
+    "temp_c,"
+    "temp_f"
+    ") VALUES "
+)
