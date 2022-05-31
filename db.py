@@ -41,3 +41,11 @@ class SensorLog:
         self.cur.execute(table_script)
         self.conn.commit()
 
+    def setup_folder_structure(self):
+        now = now_utc()
+        db_dir = f'{DB_ROOT}/{self.sensor}/{now.year}/{now.month}/{now.day}'
+
+        os.makedirs(db_dir, exist_ok=True)
+
+        return db_dir
+
