@@ -1,10 +1,9 @@
-import sqlite3
 import os
+import sqlite3
 from sqlite3 import Connection, Cursor
 from typing import Tuple
 
-from table_scripts import SENSOR_TABLE_CREATE
-from time_module import now_utc, now_datetime_hour_string
+from time_module import now_datetime_hour_string, now_utc
 
 SENSOR = 'sensor'
 DB_ROOT = './data'
