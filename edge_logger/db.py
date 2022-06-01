@@ -54,6 +54,9 @@ class SensorLog:
         # self.conn.commit()
 
     def setup_folder_structure(self):
+        '''
+        Method that constructs time-split directories per sensor.
+        '''
         now = now_utc()
         db_dir = f'{DB_ROOT}/{self.sensor}/{now.year}/{now.month}/{now.day}'
 
@@ -61,9 +64,20 @@ class SensorLog:
 
         return db_dir
 
-    def insert(self, values):
-        insert_values = ','.join(map(str, values))
-        query = f'{self.table_insert_script}({insert_values})'
+    def _insert(self, data):
+        '''
+        Method that inserts values into table.
+        '''
+        fields = ','.join(data.keys())
+        values = ','.join(map(str, data.values()))
+        query = f'INSERT INTO {self.sensor} ({fields}) VALUES ({values})'
 
         self.cur.execute(query)
-        self.conn.commit()
+
+    def insert(self, data):
+        '''
+        Method to simplify interface for inserting table values.
+        '''
+        with self as conn:
+            self.create_table(conn, data)
+            self._insert(data)
