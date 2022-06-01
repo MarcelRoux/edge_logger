@@ -13,25 +13,18 @@ class SensorLog:
 
     def __init__(self,
                  sensor=SENSOR,
-                 table_create_script=SENSOR_TABLE_CREATE,
                  db_root=DB_ROOT):
-        print('__init__ called')
         self.sensor = sensor
         self.db_root = db_root
-        self.table_create_script = table_create_script
-
         self.db_dir = self.setup_folder_structure()
         self.db_name = self.create_db_name()
 
     def __enter__(self):
-        print('__enter__ called')
         self.conn, self.cur = self.cursor()
-        # self.create_table()
 
         return self.conn
 
     def __exit__(self, type, value, traceback):
-        print('__exit__ called')
         self.conn.commit()
         self.conn.close()
 
