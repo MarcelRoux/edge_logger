@@ -3,7 +3,7 @@ import sqlite3
 from sqlite3 import Connection, Cursor
 from typing import Tuple
 
-from time_module import now_datetime_hour_string, now_utc
+from edge_logger.time_module import now_datetime_hour_string, now_utc
 
 SENSOR = 'sensor'
 DB_ROOT = './data'
