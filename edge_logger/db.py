@@ -46,12 +46,19 @@ class SensorLog:
 
         return conn, cur
 
-    def create_table(self):
+    def create_table(self, conn, data):
         '''
-        Execute table creation script.
+        Dynamically creates a tables based on the passed keys in the data.
         '''
-        self.cur.execute(self.table_create_script)
-        # self.conn.commit()
+        fields = ','.join([f'{k} REAL NOT NULL' for k in data.keys()])
+        query = (
+            f"CREATE TABLE IF NOT EXISTS {self.sensor} ("
+            " 'id' INTEGER PRIMARY KEY AUTOINCREMENT,"
+            " 'created_on' DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now'))," # UTC time.
+            f"{fields}"
+            ");"
+        )
+        conn.cursor().execute(query)
 
     def setup_folder_structure(self):
         '''
