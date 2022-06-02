@@ -1,47 +1,69 @@
-import sqlite3
 import os
+import sqlite3
 from sqlite3 import Connection, Cursor
 from typing import Tuple
 
-from table_scripts import TEMPERATURE_TABLE_CREATE, TEMPERATURE_TABLE_INSERT
-from time_module import now_utc, now_datetime_hour_string
+from edge_logger.time_module import now_datetime_hour_string, now_utc
 
-SENSOR = 'dht'
+SENSOR = 'sensor'
 DB_ROOT = './data'
 
 
 class SensorLog:
 
-    def __init__(self, sensor=SENSOR,
-                 table_setup_script=TEMPERATURE_TABLE_CREATE,
-                 table_insert_script=TEMPERATURE_TABLE_INSERT, db_root=DB_ROOT):
+    def __init__(self,
+                 sensor=SENSOR,
+                 db_root=DB_ROOT):
         self.sensor = sensor
         self.db_root = db_root
-        self.table_insert_script = table_insert_script
-
         self.db_dir = self.setup_folder_structure()
-        self.conn, self.cur = self.cursor()
-        self.setup_table(table_setup_script)
+        self.db_name = self.create_db_name()
 
-    def cursor(self) -> Tuple[Connection, Cursor]:
+    def __enter__(self):
+        self.conn, self.cur = self.cursor()
+
+        return self.conn
+
+    def __exit__(self, type, value, traceback):
+        self.conn.commit()
+        self.conn.close()
+
+    def create_db_name(self):
+        '''
+        Sets up a database file name.
+        '''
+        return f'{self.db_dir}/{self.sensor}_{now_datetime_hour_string()}.db'
+
+    def cursor(self, db_name=None) -> Tuple[Connection, Cursor]:
         '''
         Sets up a table connection and creates a file if none exists.
         '''
-        db_name = f'{self.db_dir}/{self.sensor}_{now_datetime_hour_string()}.db'
+        if(db_name is None):
+            db_name = self.db_name
 
         conn = sqlite3.connect(db_name)
         cur = conn.cursor()
 
         return conn, cur
 
-    def setup_table(self, table_script):
+    def create_table(self, conn, data):
         '''
-        Execute table creation script.
+        Dynamically creates a tables based on the passed keys in the data.
         '''
-        self.cur.execute(table_script)
-        self.conn.commit()
+        fields = ','.join([f'{k} REAL NOT NULL' for k in data.keys()])
+        query = (
+            f"CREATE TABLE IF NOT EXISTS {self.sensor} ("
+            " 'id' INTEGER PRIMARY KEY AUTOINCREMENT,"
+            " 'created_on' DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now'))," # UTC time.
+            f"{fields}"
+            ");"
+        )
+        conn.cursor().execute(query)
 
     def setup_folder_structure(self):
+        '''
+        Method that constructs time-split directories per sensor.
+        '''
         now = now_utc()
         db_dir = f'{DB_ROOT}/{self.sensor}/{now.year}/{now.month}/{now.day}'
 
@@ -49,9 +71,20 @@ class SensorLog:
 
         return db_dir
 
-    def insert(self, values):
-        insert_values = ','.join(map(str, values))
-        query = f'{self.table_insert_script}({insert_values})'
+    def _insert(self, data):
+        '''
+        Method that inserts values into table.
+        '''
+        fields = ','.join(data.keys())
+        values = ','.join(map(str, data.values()))
+        query = f'INSERT INTO {self.sensor} ({fields}) VALUES ({values})'
 
         self.cur.execute(query)
-        self.conn.commit()
+
+    def insert(self, data):
+        '''
+        Method to simplify interface for inserting table values.
+        '''
+        with self as conn:
+            self.create_table(conn, data)
+            self._insert(data)
