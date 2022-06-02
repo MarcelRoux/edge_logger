@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 
 setup(name='edge_logger',
-      version='0.0.1',
+      version='0.0.3',
       description='An edge device data logger.',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -19,7 +19,7 @@ setup(name='edge_logger',
       author='Marcel',
       author_email='',
       license='MIT',
-      package_dir={'': 'edge_logger'},
-      packages=find_packages(where='edge_logger'),
+      package_dir={'': 'src'},
+      packages=find_packages(where='src'),
       python_requires='>=3.6'
 )
