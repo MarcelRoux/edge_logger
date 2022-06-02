@@ -1,4 +1,4 @@
-from db import SensorLog
+from edge_logger import SensorLog
 
 
 def c_to_f(c):
